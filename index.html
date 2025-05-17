@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chord Companion</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f8;
+      padding: 2rem;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .section {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+      width: calc(100% - 24px);
+      margin-bottom: 10px;
+    }
+    button {
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .chord-group {
+      margin-bottom: 1.2rem;
+    }
+    .chord-group h3 {
+      margin: 0.5rem 0 0.2rem;
+      color: #222;
+    }
+    ul {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎹 Chord Companion</h1>
+
+<div class="section">
+  <h2>🔑 Enter a Key</h2>
+  <input type="text" id="keyInput" placeholder="e.g. A major, F# minor">
+  <button onclick="showKeyChords()">Show Chords</button>
+  <div id="keyOutput"></div>
+</div>
+
+<div class="section">
+  <h2>🎵 Enter a Song Name</h2>
+  <input type="text" id="songInput" placeholder="e.g. Let It Be, Stay With Me">
+  <button onclick="showSongProgression()">Show Progression</button>
+  <div id="songOutput"></div>
+</div>
+
+<script>
+  const majorScale = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'];
+  const minorScale = ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII'];
+
+  const chordMap = {
+    'A': ['A', 'Bm', 'C#m', 'D', 'E', 'F#m', 'G#dim'],
+    'Am': ['Am', 'Bdim', 'C', 'Dm', 'Em', 'F', 'G'],
+    'C': ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'Bdim'],
+    'G': ['G', 'Am', 'Bm', 'C', 'D', 'Em', 'F#dim'],
+    'D': ['D', 'Em', 'F#m', 'G', 'A', 'Bm', 'C#dim'],
+    'F': ['F', 'Gm', 'Am', 'Bb', 'C', 'Dm', 'Edim'],
+    'F#': ['F#', 'G#m', 'A#m', 'B', 'C#', 'D#m', 'E#dim'],
+    'B': ['B', 'C#m', 'D#m', 'E', 'F#', 'G#m', 'A#dim'],
+    'E': ['E', 'F#m', 'G#m', 'A', 'B', 'C#m', 'D#dim'],
+    'Em': ['Em', 'F#dim', 'G', 'Am', 'Bm', 'C', 'D'],
+    'Dm': ['Dm', 'Edim', 'F', 'Gm', 'Am', 'Bb', 'C'],
+    'C#m': ['C#m', 'D#dim', 'E', 'F#m', 'G#m', 'A', 'B'],
+  };
+
+  const subs = {
+    'I': ['iii', 'vi'],
+    'ii': ['IV', 'V7/V'],
+    'iii': ['I', 'vi'],
+    'IV': ['ii', 'bVII'],
+    'V': ['V7', 'bII7'],
+    'vi': ['I', 'iii'],
+    'vii°': ['V', 'iii'],
+    'i': ['III', 'VI'],
+    'ii°': ['iv', 'V'],
+    'III': ['i', 'v'],
+    'iv': ['ii°', 'VI'],
+    'v': ['V7', 'i'],
+    'VI': ['iv', 'III'],
+    'VII': ['V', 'i']
+  };
+
+  const progressions = {
+    'major': ['I - IV - V', 'I - V - vi - IV', 'ii - V - I', 'vi - IV - I - V'],
+    'minor': ['i - iv - v', 'i - VI - III - VII', 'ii° - V - i']
+  };
+
+  const songProgressions = {
+    'let it be': 'C - G - Am - F',
+    'stay with me': 'Am - F - C',
+    'no woman no cry': 'C - G - Am - F',
+    'creep': 'G - B - C - Cm',
+    'hallelujah': 'C - Am - F - C - G',
+    'someone like you': 'A - E - F#m - D'
+  };
+
+  function showKeyChords() {
+    const input = document.getElementById("keyInput").value.trim();
+    const output = document.getElementById("keyOutput");
+    output.innerHTML = '';
+
+    if (!input) return;
+
+    const isMinor = input.toLowerCase().includes('minor') || input.endsWith('m');
+    let key = input.replace(/(major|minor)/i, '').replace(/\s+/g, '').toUpperCase();
+    if (isMinor && !key.endsWith('m')) key += 'm';
+
+    const chords = chordMap[key];
+    if (!chords) {
+      output.innerHTML = `<p>Key not recognized.</p>`;
+      return;
+    }
+
+    const numerals = isMinor ? minorScale : majorScale;
+    const progressionSet = isMinor ? progressions.minor : progressions.major;
+
+    const chordList = chords.map((ch, i) => {
+      const numeral = numerals[i];
+      const subList = subs[numeral] || ['None'];
+      return `
+        <div class="chord-group">
+          <h3>${numeral} → ${ch}</h3>
+          <strong>Substitutions:</strong>
+          <ul>${subList.map(s => `<li>${s}</li>`).join('')}</ul>
+        </div>`;
+    }).join('');
+
+    const progList = progressionSet.map(p => `<li>${p}</li>`).join('');
+
+    output.innerHTML = `
+      <h3>Chords in ${input}:</h3>
+      ${chordList}
+      <h3>Common Progressions in ${input}:</h3>
+      <ul>${progList}</ul>`;
+  }
+
+  function showSongProgression() {
+    const input = document.getElementById("songInput").value.trim().toLowerCase();
+    const output = document.getElementById("songOutput");
+
+    if (!input) return;
+    const prog = songProgressions[input];
+
+    if (prog) {
+      output.innerHTML = `<p><strong>Progression for "${input}":</strong><br>${prog}</p>`;
+    } else {
+      output.innerHTML = `<p>Song not found. Try "Let It Be", "Stay With Me", "Hallelujah".</p>`;
+    }
+  }
+</script>
+
+</body>
+</html>
+
