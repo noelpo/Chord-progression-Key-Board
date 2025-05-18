@@ -6,7 +6,6 @@
   <title>Chord Companion</title>
   <meta name="description" content="Detect song key, view chord progressions, and more.">
   <meta name="keywords" content="chord progressions, music key detection, web app, piano, guitar">
-
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -101,23 +100,54 @@
 </section>
 
 <script>
-  // Chord and progression data
+  // --- Chord and progression data ---
   const majorScale = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'];
   const minorScale = ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII'];
+
+  // Extended chord database for all major and minor keys (with sharps and flats)
   const chordMap = {
-    'A': ['A', 'Bm', 'C#m', 'D', 'E', 'F#m', 'G#dim'],
-    'Am': ['Am', 'Bdim', 'C', 'Dm', 'Em', 'F', 'G'],
-    'C': ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'Bdim'],
-    'G': ['G', 'Am', 'Bm', 'C', 'D', 'Em', 'F#dim'],
-    'D': ['D', 'Em', 'F#m', 'G', 'A', 'Bm', 'C#dim'],
-    'F': ['F', 'Gm', 'Am', 'Bb', 'C', 'Dm', 'Edim'],
-    'F#': ['F#', 'G#m', 'A#m', 'B', 'C#', 'D#m', 'E#dim'],
-    'B': ['B', 'C#m', 'D#m', 'E', 'F#', 'G#m', 'A#dim'],
-    'E': ['E', 'F#m', 'G#m', 'A', 'B', 'C#m', 'D#dim'],
-    'Em': ['Em', 'F#dim', 'G', 'Am', 'Bm', 'C', 'D'],
-    'Dm': ['Dm', 'Edim', 'F', 'Gm', 'Am', 'Bb', 'C'],
-    'C#m': ['C#m', 'D#dim', 'E', 'F#m', 'G#m', 'A', 'B'],
+    // Major keys
+    'C':    ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'Bdim'],
+    'C#':   ['C#', 'D#m', 'E#m', 'F#', 'G#', 'A#m', 'B#dim'],
+    'Db':   ['Db', 'Ebm', 'Fm', 'Gb', 'Ab', 'Bbm', 'Cdim'],
+    'D':    ['D', 'Em', 'F#m', 'G', 'A', 'Bm', 'C#dim'],
+    'D#':   ['D#', 'E#m', 'F##m', 'G#', 'A#', 'B#m', 'C##dim'],
+    'Eb':   ['Eb', 'Fm', 'Gm', 'Ab', 'Bb', 'Cm', 'Ddim'],
+    'E':    ['E', 'F#m', 'G#m', 'A', 'B', 'C#m', 'D#dim'],
+    'F':    ['F', 'Gm', 'Am', 'Bb', 'C', 'Dm', 'Edim'],
+    'F#':   ['F#', 'G#m', 'A#m', 'B', 'C#', 'D#m', 'E#dim'],
+    'Gb':   ['Gb', 'Abm', 'Bbm', 'Cb', 'Db', 'Ebm', 'Fdim'],
+    'G':    ['G', 'Am', 'Bm', 'C', 'D', 'Em', 'F#dim'],
+    'G#':   ['G#', 'A#m', 'B#m', 'C#', 'D#', 'E#m', 'F##dim'],
+    'Ab':   ['Ab', 'Bbm', 'Cm', 'Db', 'Eb', 'Fm', 'Gdim'],
+    'A':    ['A', 'Bm', 'C#m', 'D', 'E', 'F#m', 'G#dim'],
+    'A#':   ['A#', 'B#m', 'C##m', 'D#', 'E#', 'F##m', 'G##dim'],
+    'Bb':   ['Bb', 'Cm', 'Dm', 'Eb', 'F', 'Gm', 'Adim'],
+    'B':    ['B', 'C#m', 'D#m', 'E', 'F#', 'G#m', 'A#dim'],
+    'Cb':   ['Cb', 'Dbm', 'Ebm', 'Fb', 'Gb', 'Abm', 'Bbdim'],
+
+    // Minor keys
+    'Cm':   ['Cm', 'Ddim', 'Eb', 'Fm', 'Gm', 'Ab', 'Bb'],
+    'C#m':  ['C#m', 'D#dim', 'E', 'F#m', 'G#m', 'A', 'B'],
+    'Dbm':  ['Dbm', 'Ebdim', 'E', 'Gbm', 'Abm', 'A', 'B'],
+    'Dm':   ['Dm', 'Edim', 'F', 'Gm', 'Am', 'Bb', 'C'],
+    'D#m':  ['D#m', 'E#dim', 'F#', 'G#m', 'A#m', 'B', 'C#'],
+    'Ebm':  ['Ebm', 'Fdim', 'Gb', 'Abm', 'Bbm', 'Cb', 'Db'],
+    'Em':   ['Em', 'F#dim', 'G', 'Am', 'Bm', 'C', 'D'],
+    'Fm':   ['Fm', 'Gdim', 'Ab', 'Bbm', 'Cm', 'Db', 'Eb'],
+    'F#m':  ['F#m', 'G#dim', 'A', 'Bm', 'C#m', 'D', 'E'],
+    'Gbm':  ['Gbm', 'Abdim', 'A', 'Bm', 'Dbm', 'D', 'E'],
+    'Gm':   ['Gm', 'Adim', 'Bb', 'Cm', 'Dm', 'Eb', 'F'],
+    'G#m':  ['G#m', 'A#dim', 'B', 'C#m', 'D#m', 'E', 'F#'],
+    'Abm':  ['Abm', 'Bbdim', 'Cb', 'Dbm', 'Ebm', 'Fb', 'Gb'],
+    'Am':   ['Am', 'Bdim', 'C', 'Dm', 'Em', 'F', 'G'],
+    'A#m':  ['A#m', 'B#dim', 'C#', 'D#m', 'E#m', 'F#', 'G#'],
+    'Bbm':  ['Bbm', 'Cdim', 'Db', 'Ebm', 'Fm', 'Gb', 'Ab'],
+    'Bm':   ['Bm', 'C#dim', 'D', 'Em', 'F#m', 'G', 'A'],
+    'B#m':  ['B#m', 'C##dim', 'D#', 'E#m', 'F##m', 'G#', 'A#'],
+    'Cbm':  ['Cbm', 'Dbdim', 'Ebb', 'Fb', 'Gb', 'Abb', 'Bbb'],
   };
+
   const subs = {
     'I': ['iii', 'vi'],
     'ii': ['IV', 'V7/V'],
@@ -147,11 +177,59 @@
     'someone like you': 'A - E - F#m - D'
   };
 
-  // Event listeners
+  // Normalization map for enharmonic equivalents and input cleaning
+  const enharmonicMap = {
+    'db': 'C#',
+    'eb': 'D#',
+    'fb': 'E',
+    'gb': 'F#',
+    'ab': 'G#',
+    'bb': 'A#',
+    'cb': 'B',
+    'b#': 'C',
+    'e#': 'F',
+    'c#': 'C#',
+    'd#': 'D#',
+    'f#': 'F#',
+    'g#': 'G#',
+    'a#': 'A#',
+    // Minors
+    'dbm': 'C#m',
+    'ebm': 'D#m',
+    'fbm': 'Em',
+    'gbm': 'F#m',
+    'abm': 'G#m',
+    'bbm': 'A#m',
+    'cbm': 'Bm',
+    'b#m': 'Cm',
+    'e#m': 'Fm',
+    'c#m': 'C#m',
+    'd#m': 'D#m',
+    'f#m': 'F#m',
+    'g#m': 'G#m',
+    'a#m': 'A#m'
+  };
+
+  function normalizeKeyInput(input) {
+    let key = input.trim().toLowerCase();
+    key = key.replace(/major|maj|\s+/gi, '');
+    key = key.replace(/minor|min|m$/gi, 'm');
+    // Remove trailing 'm' if not minor
+    if (!key.endsWith('m')) key = key.replace(/m$/, '');
+    // Map enharmonics
+    if (enharmonicMap[key]) key = enharmonicMap[key];
+    // Capitalize (C# or C#m etc.)
+    if (key.length === 2 && key[1] === 'b') key = key[0].toUpperCase() + 'b';
+    else if (key.length === 2 && key[1] === '#') key = key[0].toUpperCase() + '#';
+    else if (key.length === 3 && (key[1] === '#' || key[1] === 'b') && key[2] === 'm') key = key[0].toUpperCase() + key[1] + 'm';
+    else if (key.length === 1) key = key.toUpperCase();
+    else if (key.length === 2 && key[1] === 'm') key = key[0].toUpperCase() + 'm';
+    return key;
+  }
+
   document.getElementById('keyBtn').addEventListener('click', showKeyChords);
   document.getElementById('songBtn').addEventListener('click', showSongProgression);
 
-  // Accessibility: pressing Enter triggers button
   document.getElementById('keyInput').addEventListener('keyup', (e) => {
     if (e.key === 'Enter') showKeyChords();
   });
@@ -160,19 +238,18 @@
   });
 
   function showKeyChords() {
-    const input = document.getElementById("keyInput").value.trim();
+    const input = document.getElementById("keyInput").value;
     const output = document.getElementById("keyOutput");
     output.innerHTML = '';
     if (!input) {
       output.innerHTML = `<p>Please enter a key.</p>`;
       return;
     }
-    const isMinor = input.toLowerCase().includes('minor') || input.endsWith('m');
-    let key = input.replace(/(major|minor)/i, '').replace(/\s+/g, '').toUpperCase();
-    if (isMinor && !key.endsWith('M')) key += 'm';
-    const chords = chordMap[key];
+    const normalizedKey = normalizeKeyInput(input);
+    const isMinor = normalizedKey.endsWith('m');
+    const chords = chordMap[normalizedKey];
     if (!chords) {
-      output.innerHTML = `<p>Key not recognized.</p>`;
+      output.innerHTML = `<p>Key not recognized. Try keys like "C", "G#", "Bb", "F# minor", etc.</p>`;
       return;
     }
     const numerals = isMinor ? minorScale : majorScale;
@@ -216,7 +293,6 @@
     'C', 'C#', 'D', 'D#', 'E', 'F',
     'F#', 'G', 'G#', 'A', 'A#', 'B'
   ];
-  // Map detected root to available keys
   const availableKeys = Object.keys(chordMap);
 
   let recording = false;
